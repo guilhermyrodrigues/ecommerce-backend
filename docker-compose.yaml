@@ -1,6 +1,22 @@
 version: "3.8"
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce-app
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    networks:
+      - ecommerce-net
+
   postgres:
     image: postgres:16
     container_name: postgres
@@ -56,4 +72,7 @@ networks:
   ecommerce-net:
 
 volumes:
-  pgdata:
+  pgdata: 
+   
+
+  
