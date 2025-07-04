@@ -5,6 +5,9 @@ spring:
 ---
 
 spring:
+  security:
+    user:
+      password: disabled # evitar login default
   config:
     activate:
       on-profile: dev
@@ -14,7 +17,10 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
-    
+jwt:
+  secret: super-secreta-para-jwt-nao-expirar
+  expiration: 86400000 # 1 dia em ms
+
 data:
   jpa:
     hibernate:
