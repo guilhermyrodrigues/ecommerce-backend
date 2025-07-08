@@ -33,20 +33,26 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            String email = jwtUtil.extractUsername(token);
+            try {
+                String token = header.substring(7);
+                String email = jwtUtil.extractUsername(token);
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails user = userDetailsService.loadUserByUsername(email);
-                if (jwtUtil.isValid(token, user)) {
-                    String role = jwtUtil.extractRole(token); // você precisa implementar esse método
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails user = userDetailsService.loadUserByUsername(email);
+                    if (jwtUtil.isValid(token, user)) {
+                        String role = jwtUtil.extractRole(token); // você precisa implementar esse método
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
+            } catch (Exception e) {
+                // Se o token for inválido ou expirado, apenas continua sem autenticação
+                // Isso permite que endpoints públicos funcionem
+                logger.debug("Token JWT inválido ou expirado: " + e.getMessage());
             }
         }
 
