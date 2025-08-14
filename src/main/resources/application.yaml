@@ -1,47 +1,225 @@
 spring:
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 ---
-
+# PROFILE DE DESENVOLVIMENTO
 spring:
-  security:
-    user:
-      password: disabled # evitar login default
+  application:
+    name: ecommerce-app
   config:
     activate:
       on-profile: dev
 
-  datasource:
-    url: jdbc:postgresql://postgres:5432/ecommerce
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-jwt:
-  secret: super-secreta-para-jwt-nao-expirar
-  expiration: 86400000 # 1 dia em ms
+  security:
+    user:
+      password: disabled
 
-data:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/ecommerce}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:20000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: ${SHOW_SQL:true}
     properties:
       hibernate:
-        format_sql: true
+        format_sql: ${FORMAT_SQL:true}
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  redis:
-    host: redis
-    port: 6379
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2000ms}
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ${KAFKA_GROUP_ID:ecommerce-group}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  # Lifecycle configuration (movido para dentro do spring)
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:30s}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:fallback-secret-key-for-development-only}
+  expiration: ${JWT_EXPIRATION:86400000} # 1 dia em ms
+
+# Server Configuration
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# Management/Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_ENDPOINTS:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      enabled: true
+      show-details: ${HEALTH_SHOW_DETAILS:when-authorized}
+  metrics:
+    export:
+      prometheus:
+        enabled: ${PROMETHEUS_ENABLED:true}
+
+# Logging
+logging:
+  level:
+    com.guilhermy.ecommerce: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:DEBUG}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_PARAMS_LOG_LEVEL:TRACE}
+  pattern:
+    console: "${LOG_PATTERN:%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}}"
+
+---
+# PROFILE DE PRODUÇÃO
+spring:
+  application:
+    name: ecommerce-app
+  config:
+    activate:
+      on-profile: prod
+
+  security:
+    user:
+      password: disabled
+
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:50}
+      minimum-idle: ${DB_POOL_MIN:10}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      timeout: ${REDIS_TIMEOUT:5000ms}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: ${KAFKA_RETRIES:3}
+    consumer:
+      group-id: ${KAFKA_GROUP_ID:ecommerce-prod-group}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Lifecycle configuration
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:30s}
+
+# JWT Configuration (PRODUÇÃO - OBRIGATÓRIO)
+jwt:
+  secret: ${JWT_SECRET} # OBRIGATÓRIO em produção
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora em produção
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# Management/Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_ENDPOINTS:health,info,metrics}
+  endpoint:
+    health:
+      enabled: true
+      show-details: never # Segurança em produção
+  metrics:
+    export:
+      prometheus:
+        enabled: ${PROMETHEUS_ENABLED:true}
+
+# Logging (JSON estruturado em produção)
+logging:
+  level:
+    com.guilhermy.ecommerce: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%-5level","pid":"%property{PID}","thread":"%thread","logger":"%-40.40logger{39}","message":"%message"}%n'
+
+---
+# PROFILE DE TESTE
+spring:
+  application:
+    name: ecommerce-app
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+
+jwt:
+  secret: test-secret-key
+  expiration: 86400000
+
+logging:
+  level:
+    com.guilhermy.ecommerce: DEBUG
