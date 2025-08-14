@@ -41,6 +41,7 @@ build/
 .env.prod
 .env.test
 *.env
+.env*
 
 # =================================
 # LOGS
