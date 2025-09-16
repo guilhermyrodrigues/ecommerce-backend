@@ -7,6 +7,7 @@ import com.guilhermy.ecommerce.domain.User;
 import com.guilhermy.ecommerce.dto.OrderItemRequestDTO;
 import com.guilhermy.ecommerce.dto.OrderRequestDTO;
 import com.guilhermy.ecommerce.dto.OrderResponseDTO;
+import com.guilhermy.ecommerce.dto.PedidoCriadoEventDTO;
 import com.guilhermy.ecommerce.enums.OrderStatus;
 import com.guilhermy.ecommerce.exception.ResourceNotFoundException;
 import com.guilhermy.ecommerce.mapper.OrderMapper;
@@ -14,9 +15,12 @@ import com.guilhermy.ecommerce.repository.OrderRepository;
 import com.guilhermy.ecommerce.repository.ProductRepository;
 import com.guilhermy.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class OrderService {
     
     private final OrderRepository orderRepository;
@@ -31,6 +36,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductService productService;
     private final OrderMapper orderMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     
     public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, Long userId) {
         User user = userRepository.findById(userId)
@@ -49,6 +55,16 @@ public class OrderService {
         order.setItems(orderItems);
         
         Order savedOrder = orderRepository.save(order);
+        
+        // Produzir evento Kafka
+        try {
+            PedidoCriadoEventDTO event = createPedidoCriadoEvent(savedOrder);
+            kafkaTemplate.send("pedido.criado", event);
+            log.info("Evento pedido.criado enviado para o Kafka: {}", savedOrder.getId());
+        } catch (Exception e) {
+            log.error("Erro ao enviar evento para o Kafka: {}", e.getMessage());
+        }
+        
         return orderMapper.toResponseDTO(savedOrder);
     }
     
@@ -107,5 +123,29 @@ public class OrderService {
             throw new ResourceNotFoundException("Pedido não encontrado");
         }
         orderRepository.deleteById(id);
+    }
+    
+    private PedidoCriadoEventDTO createPedidoCriadoEvent(Order order) {
+        List<PedidoCriadoEventDTO.OrderItemEventDTO> eventItems = order.getItems().stream()
+                .map(item -> new PedidoCriadoEventDTO.OrderItemEventDTO(
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getQuantity(),
+                        item.getProduct().getPrice().doubleValue()
+                ))
+                .collect(Collectors.toList());
+        
+        double totalAmount = order.getItems().stream()
+                .mapToDouble(item -> item.getProduct().getPrice().doubleValue() * item.getQuantity())
+                .sum();
+        
+        return new PedidoCriadoEventDTO(
+                order.getId(),
+                order.getUser().getId(),
+                order.getStatus(),
+                order.getMoment(),
+                eventItems,
+                totalAmount
+        );
     }
 } 

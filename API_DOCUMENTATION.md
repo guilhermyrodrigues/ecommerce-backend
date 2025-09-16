@@ -1,5 +1,27 @@
 # 📚 Documentação da API - Módulo 4
 
+## 🚀 Documentação Interativa Swagger
+
+A API agora possui documentação completa e interativa usando OpenAPI 3.0 (Swagger)!
+
+### 🌐 Acessar a Documentação
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **API Docs JSON**: http://localhost:8080/api-docs
+
+### ✨ Recursos da Documentação
+- ✅ Interface interativa para testar endpoints
+- ✅ Exemplos de requisições e respostas
+- ✅ Autenticação JWT integrada
+- ✅ Validações e códigos de erro documentados
+- ✅ Download da especificação OpenAPI
+
+### 🔧 Como Usar
+1. Inicie a aplicação: `docker-compose up -d`
+2. Acesse: http://localhost:8080/swagger-ui.html
+3. Para endpoints protegidos, faça login e use o token JWT
+
+---
+
 ## 🛍 CRUDs Principais (Product, Category, Order)
 
 ### 📋 Endpoints Disponíveis

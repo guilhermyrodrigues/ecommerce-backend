@@ -30,6 +30,21 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException, java.io.IOException {
 
+        // Permitir endpoints públicos sem autenticação
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/auth/") ||
+                requestURI.startsWith("/api/products/") ||
+                requestURI.startsWith("/api/categories/") ||
+                requestURI.startsWith("/api/kafka/") ||
+                requestURI.startsWith("/swagger-ui.html") ||
+                requestURI.startsWith("/swagger-ui/") ||
+                requestURI.startsWith("/v3/api-docs") ||
+                requestURI.startsWith("/api-docs") ||
+                requestURI.startsWith("/swagger-resources") ||
+                requestURI.startsWith("/webjars/")) {
+            chain.doFilter(request, response);
+            return;
+        }
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
