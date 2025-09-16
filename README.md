@@ -254,7 +254,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **Guilhermy Rodrigues**
 - Email: guilhermy@example.com
-- LinkedIn: [https://www.linkedin.com/in/guilhermy-rodrigues-7a5163244]
+- LinkedIn: https://www.linkedin.com/in/guilhermy-rodrigues-7a5163244
 
 ---
 
