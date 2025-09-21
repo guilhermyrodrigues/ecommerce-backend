@@ -6,8 +6,11 @@ import com.guilhermy.ecommerce.dto.ProductRequestDTO;
 import com.guilhermy.ecommerce.dto.ProductResponseDTO;
 import com.guilhermy.ecommerce.exception.ResourceNotFoundException;
 import com.guilhermy.ecommerce.mapper.ProductMapper;
+import com.guilhermy.ecommerce.mapper.ProdutoMapper;
 import com.guilhermy.ecommerce.repository.CategoryRepository;
 import com.guilhermy.ecommerce.repository.ProductRepository;
+import com.guilhermy.ecommerce.service.validation.ProductValidation;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final ProductValidation productValidation;
+    private final ProdutoMapper produtoMapper;
     
     public ProductResponseDTO create(ProductRequestDTO requestDTO) {
         Category category = categoryRepository.findById(requestDTO.getCategoryId())
@@ -37,16 +42,14 @@ public class ProductService {
     
     @Transactional(readOnly = true)
     public ProductResponseDTO findById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
-        return productMapper.toResponseDTO(product);
+        Product product = productValidation.validaIdEBuscaProduto(id);
+        return produtoMapper.toDto(product);
     }
     
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAll() {
-        return productRepository.findAll().stream()
-                .map(productMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        List<Product> listProducts = productRepository.findAll();
+        return produtoMapper.toDtoList(listProducts);
     }
     
     @Transactional(readOnly = true)
