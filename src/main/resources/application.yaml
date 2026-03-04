@@ -69,3 +69,18 @@ springdoc:
     tagsSorter: alpha
     tryItOutEnabled: true
   show-actuator: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
