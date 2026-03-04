@@ -25,5 +25,10 @@ jobs:
       - name: Ensure Maven Wrapper is executable
         run: chmod +x mvnw
 
-      - name: Run tests
-        run: ./mvnw -B -ntp test
+      - name: Run tests with wrapper (fallback to mvn)
+        run: |
+          if ./mvnw -B -ntp -q -version; then
+            ./mvnw -B -ntp test
+          else
+            mvn -B -ntp test
+          fi
