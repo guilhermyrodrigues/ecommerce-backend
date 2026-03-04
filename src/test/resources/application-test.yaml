@@ -14,6 +14,13 @@ spring:
     listener:
       auto-startup: false
 
+  main:
+    lazy-initialization: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaStreamsAutoConfiguration
+
 jwt:
   secret: test-secret-key
   expiration: 86400000

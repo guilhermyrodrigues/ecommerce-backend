@@ -28,7 +28,7 @@ jobs:
       - name: Run tests with wrapper (fallback to mvn)
         run: |
           if ./mvnw -B -ntp -q -version; then
-            ./mvnw -B -ntp test
+            ./mvnw -B -ntp -Dspring.profiles.active=test test
           else
-            mvn -B -ntp test
+            mvn -B -ntp -Dspring.profiles.active=test test
           fi
