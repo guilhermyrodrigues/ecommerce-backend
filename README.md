@@ -225,6 +225,7 @@ docker run -p 8080:8080 ecommerce-api
 |----------|-----------|---------|
 | `SPRING_DATASOURCE_URL` | URL do PostgreSQL | `jdbc:postgresql://localhost:5432/ecommerce` |
 | `SPRING_KAFKA_BOOTSTRAP_SERVERS` | Servidores Kafka | `localhost:9092` |
+| `SPRING_KAFKA_CONSUMER_GROUP_ID` | Consumer group Kafka | `ecommerce-group` |
 | `JWT_SECRET` | Chave secreta JWT | `super-secreta-para-jwt-nao-expirar` |
 | `JWT_EXPIRATION` | Expiração do JWT | `86400000` |
 
