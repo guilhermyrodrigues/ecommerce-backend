@@ -7,6 +7,7 @@ import com.guilhermy.ecommerce.domain.User;
 import com.guilhermy.ecommerce.dto.OrderItemRequestDTO;
 import com.guilhermy.ecommerce.dto.OrderRequestDTO;
 import com.guilhermy.ecommerce.dto.OrderResponseDTO;
+import com.guilhermy.ecommerce.dto.PaginatedResponseDTO;
 import com.guilhermy.ecommerce.dto.PedidoCriadoEventDTO;
 import com.guilhermy.ecommerce.enums.OrderStatus;
 import com.guilhermy.ecommerce.exception.ResourceNotFoundException;
@@ -16,6 +17,9 @@ import com.guilhermy.ecommerce.repository.ProductRepository;
 import com.guilhermy.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,6 +113,22 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
+    public PaginatedResponseDTO<OrderResponseDTO> findAllPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<OrderResponseDTO> ordersPage = orderRepository.findAll(pageable)
+                .map(orderMapper::toResponseDTO);
+
+        return new PaginatedResponseDTO<>(
+                ordersPage.getContent(),
+                ordersPage.getNumber(),
+                ordersPage.getSize(),
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
+    }
+
     public OrderResponseDTO updateStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));

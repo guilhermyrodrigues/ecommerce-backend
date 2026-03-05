@@ -1,6 +1,8 @@
 package com.guilhermy.ecommerce.controller;
 
 import com.guilhermy.ecommerce.domain.User;
+import com.guilhermy.ecommerce.dto.PaginatedResponseDTO;
+import com.guilhermy.ecommerce.dto.OrderResponseDTO;
 import com.guilhermy.ecommerce.enums.Role;
 import com.guilhermy.ecommerce.repository.UserRepository;
 import com.guilhermy.ecommerce.service.OrderService;
@@ -47,6 +49,22 @@ class OrderSecurityIntegrationTest {
     @WithMockUser(username = "customer@test.com", roles = "CUSTOMER")
     void findAllShouldForbidCustomer() throws Exception {
         mockMvc.perform(get("/api/orders"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
+    void findAllPagedShouldAllowAdmin() throws Exception {
+        when(orderService.findAllPaged(0, 10)).thenReturn(new PaginatedResponseDTO<>(Collections.emptyList(), 0, 10, 0, 0, true));
+
+        mockMvc.perform(get("/api/orders/paged"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "customer@test.com", roles = "CUSTOMER")
+    void findAllPagedShouldForbidCustomer() throws Exception {
+        mockMvc.perform(get("/api/orders/paged"))
                 .andExpect(status().isForbidden());
     }
 

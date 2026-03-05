@@ -9,8 +9,13 @@ import com.guilhermy.ecommerce.mapper.ProductMapper;
 import com.guilhermy.ecommerce.repository.CategoryRepository;
 import com.guilhermy.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.guilhermy.ecommerce.dto.PaginatedResponseDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +54,22 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
+    public PaginatedResponseDTO<ProductResponseDTO> findAllPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductResponseDTO> productsPage = productRepository.findAll(pageable)
+                .map(productMapper::toResponseDTO);
+
+        return new PaginatedResponseDTO<>(
+                productsPage.getContent(),
+                productsPage.getNumber(),
+                productsPage.getSize(),
+                productsPage.getTotalElements(),
+                productsPage.getTotalPages(),
+                productsPage.isLast()
+        );
+    }
+
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> findByCategory(Long categoryId) {
         return productRepository.findByCategoryId(categoryId).stream()

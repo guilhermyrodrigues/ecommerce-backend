@@ -172,12 +172,14 @@ A documentação interativa da API está disponível via Swagger:
 
 #### Produtos
 - `GET /api/products` - Listar produtos
+- `GET /api/products/paged?page=0&size=10` - Listar produtos paginados
 - `POST /api/products` - Criar produto
 - `PUT /api/products/{id}` - Atualizar produto
 - `DELETE /api/products/{id}` - Excluir produto
 
 #### Pedidos
 - `GET /api/orders` - Listar pedidos
+- `GET /api/orders/paged?page=0&size=10` - Listar pedidos paginados (ADMIN)
 - `POST /api/orders` - Criar pedido
 - `GET /api/orders/my-orders` - Meus pedidos
 

@@ -2,6 +2,7 @@ package com.guilhermy.ecommerce.controller;
 
 import com.guilhermy.ecommerce.dto.OrderRequestDTO;
 import com.guilhermy.ecommerce.dto.OrderResponseDTO;
+import com.guilhermy.ecommerce.dto.PaginatedResponseDTO;
 import com.guilhermy.ecommerce.enums.OrderStatus;
 import com.guilhermy.ecommerce.exception.ResourceNotFoundException;
 import com.guilhermy.ecommerce.repository.UserRepository;
@@ -67,6 +68,19 @@ public class OrderController {
     })
     public ResponseEntity<List<OrderResponseDTO>> findAll() {
         List<OrderResponseDTO> response = orderService.findAll();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/paged")
+    @Operation(summary = "Listar pedidos paginados", description = "Lista pedidos com paginação (apenas administradores)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de pedidos retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
+    public ResponseEntity<PaginatedResponseDTO<OrderResponseDTO>> findAllPaged(
+            @Parameter(description = "Número da página (base 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size) {
+        PaginatedResponseDTO<OrderResponseDTO> response = orderService.findAllPaged(page, size);
         return ResponseEntity.ok(response);
     }
 
