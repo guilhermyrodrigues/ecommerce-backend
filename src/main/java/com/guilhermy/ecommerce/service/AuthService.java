@@ -4,6 +4,8 @@ import com.guilhermy.ecommerce.domain.User;
 import com.guilhermy.ecommerce.dto.JwtResponseDTO;
 import com.guilhermy.ecommerce.dto.LoginDTO;
 import com.guilhermy.ecommerce.dto.RegisterDTO;
+import com.guilhermy.ecommerce.enums.Role;
+import com.guilhermy.ecommerce.exception.ConflictException;
 import com.guilhermy.ecommerce.jwt.JwtUtil;
 import com.guilhermy.ecommerce.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,11 +35,15 @@ public class AuthService {
     }
 
     public void register(RegisterDTO dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ConflictException("Email já está em uso");
+        }
+
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(dto.getRole());
+        user.setRole(Role.CUSTOMER);
         userRepository.save(user);
     }
 
