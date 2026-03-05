@@ -181,6 +181,38 @@ A documentação interativa da API está disponível via Swagger:
 - `POST /api/orders` - Criar pedido
 - `GET /api/orders/my-orders` - Meus pedidos
 
+### 🔑 Como obter e usar o JWT no Swagger
+
+1. **Crie um usuário** em `POST /auth/register` (role é definida como `CUSTOMER` no backend).
+
+```json
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+2. **Faça login** em `POST /auth/login`.
+
+```json
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+3. Copie o valor de `token` da resposta.
+4. Clique em **Authorize** no Swagger e preencha no formato:
+
+```text
+Bearer SEU_TOKEN_AQUI
+```
+
+5. Agora você já pode testar endpoints protegidos (ex.: `/api/orders/my-orders`).
+
+> Dica: se receber `403`, valide se a rota exige role `ADMIN`.
+
 ## 🔒 Segurança
 
 - Autenticação JWT
