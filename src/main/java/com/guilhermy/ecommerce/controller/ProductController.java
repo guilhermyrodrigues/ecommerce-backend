@@ -1,5 +1,6 @@
 package com.guilhermy.ecommerce.controller;
 
+import com.guilhermy.ecommerce.dto.PaginatedResponseDTO;
 import com.guilhermy.ecommerce.dto.ProductRequestDTO;
 import com.guilhermy.ecommerce.dto.ProductResponseDTO;
 import com.guilhermy.ecommerce.service.ProductService;
@@ -74,6 +75,18 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
     
+    @GetMapping("/paged")
+    @Operation(summary = "Listar produtos paginados", description = "Lista produtos com paginação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de produtos retornada com sucesso")
+    })
+    public ResponseEntity<PaginatedResponseDTO<ProductResponseDTO>> findAllPaged(
+            @Parameter(description = "Número da página (base 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size) {
+        PaginatedResponseDTO<ProductResponseDTO> response = productService.findAllPaged(page, size);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/available")
     @Operation(summary = "Listar produtos disponíveis", description = "Lista apenas produtos com estoque disponível")
     @ApiResponses(value = {

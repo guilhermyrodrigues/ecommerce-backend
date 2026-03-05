@@ -172,14 +172,48 @@ A documentação interativa da API está disponível via Swagger:
 
 #### Produtos
 - `GET /api/products` - Listar produtos
+- `GET /api/products/paged?page=0&size=10` - Listar produtos paginados
 - `POST /api/products` - Criar produto
 - `PUT /api/products/{id}` - Atualizar produto
 - `DELETE /api/products/{id}` - Excluir produto
 
 #### Pedidos
 - `GET /api/orders` - Listar pedidos
+- `GET /api/orders/paged?page=0&size=10` - Listar pedidos paginados (ADMIN)
 - `POST /api/orders` - Criar pedido
 - `GET /api/orders/my-orders` - Meus pedidos
+
+### 🔑 Como obter e usar o JWT no Swagger
+
+1. **Crie um usuário** em `POST /auth/register` (role é definida como `CUSTOMER` no backend).
+
+```json
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+2. **Faça login** em `POST /auth/login`.
+
+```json
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+3. Copie o valor de `token` da resposta.
+4. Clique em **Authorize** no Swagger e preencha no formato:
+
+```text
+Bearer SEU_TOKEN_AQUI
+```
+
+5. Agora você já pode testar endpoints protegidos (ex.: `/api/orders/my-orders`).
+
+> Dica: se receber `403`, valide se a rota exige role `ADMIN`.
 
 ## 🔒 Segurança
 
@@ -225,6 +259,7 @@ docker run -p 8080:8080 ecommerce-api
 |----------|-----------|---------|
 | `SPRING_DATASOURCE_URL` | URL do PostgreSQL | `jdbc:postgresql://localhost:5432/ecommerce` |
 | `SPRING_KAFKA_BOOTSTRAP_SERVERS` | Servidores Kafka | `localhost:9092` |
+| `SPRING_KAFKA_CONSUMER_GROUP_ID` | Consumer group Kafka | `ecommerce-group` |
 | `JWT_SECRET` | Chave secreta JWT | `super-secreta-para-jwt-nao-expirar` |
 | `JWT_EXPIRATION` | Expiração do JWT | `86400000` |
 
